@@ -16,7 +16,7 @@
  * On first submission, the script writes a header row automatically.
  */
 
-const NOTIFY_EMAIL = 'mathswithjacob@gmail.com';
+const NOTIFY_EMAIL = 'mathswithjacob+eoi@gmail.com';
 
 const HEADERS = [
   'Submitted at',
