@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Expression of interest for maths tutoring with Jacob Carter, based in Carlton, Melbourne." />
+  <title>Maths with Jacob — Expression of Interest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Karla:wght@400;500;600;700&amp;display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <div class="masthead__brand">
+        <svg class="masthead__mark" viewBox="0 0 60 60" aria-hidden="true">
+          <path
+            d="M5 50 Q 15 10, 30 30 T 55 10"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+          <circle cx="5" cy="50" r="2" fill="currentColor" />
+          <circle cx="55" cy="10" r="2" fill="currentColor" />
+        </svg>
+        <div>
+          <h1 class="masthead__title">Maths with Jacob</h1>
+          <p class="masthead__tagline">Tutoring · Carlton &amp; inner Melbourne</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="form-panel" aria-labelledby="form-heading">
+        <h2 id="form-heading" class="section-title">Expression of Interest</h2>
+        <p class="lede">
+          Fill this in and I&rsquo;ll be in touch within a few days. Nothing here is
+          binding &mdash; it just helps me understand whether we&rsquo;d be a good
+          fit, and what your student needs.
+        </p>
+
+        <form id="eoi-form" novalidate>
+          <fieldset class="field-group">
+            <legend>Your details</legend>
+
+            <div class="field">
+              <label for="contact-name">Your name</label>
+              <input type="text" id="contact-name" name="contactName" required autocomplete="name" />
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required autocomplete="email" />
+            </div>
+
+            <div class="field">
+              <label for="phone">
+                Phone <span class="hint">(optional)</span>
+              </label>
+              <input type="tel" id="phone" name="phone" autocomplete="tel" />
+            </div>
+
+            <div class="field">
+              <label for="call-times">
+                Best times to reach you <span class="hint">(or leave as &ldquo;anytime&rdquo;)</span>
+              </label>
+              <input
+                type="text"
+                id="call-times"
+                name="callTimes"
+                value="Anytime"
+              />
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend>Student(s)</legend>
+            <p class="hint hint--block">
+              Tutoring more than one student (e.g. siblings)? Use &ldquo;Add another
+              student&rdquo; below.
+            </p>
+
+            <div id="tutees-container"></div>
+
+            <button type="button" id="add-tutee" class="ghost-button">
+              + Add another student
+            </button>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend>Preferred location</legend>
+            <p class="hint hint--block">Pick one. We can always change it later.</p>
+
+            <div class="radio-stack">
+              <label class="radio-row">
+                <input type="radio" name="location" value="The University of Melbourne" required />
+                <span>The University of Melbourne</span>
+              </label>
+              <label class="radio-row">
+                <input type="radio" name="location" value="Carlton North Library" />
+                <span>Carlton North Library</span>
+              </label>
+              <label class="radio-row">
+                <input type="radio" name="location" value="Kathleen Syme Library and Community Centre" />
+                <span>Kathleen Syme Library &amp; Community Centre</span>
+              </label>
+              <label class="radio-row">
+                <input type="radio" name="location" value="Jacob's place (Carlton)" />
+                <span>My place &mdash; Carlton</span>
+              </label>
+              <label class="radio-row">
+                <input type="radio" name="location" value="Your place" id="loc-yours" />
+                <span>Your place</span>
+              </label>
+
+              <div class="conditional" id="suburb-wrap" hidden>
+                <div class="field">
+                  <label for="suburb">Which suburb?</label>
+                  <input type="text" id="suburb" name="suburb" />
+                </div>
+              </div>
+
+              <label class="radio-row">
+                <input type="radio" name="location" value="Flexible / no preference" />
+                <span>Flexible &mdash; happy with whatever works</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="submit-row">
+            <button type="submit" class="primary-button" id="submit-btn">
+              Send expression of interest
+            </button>
+            <p class="status" id="status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+
+        <div id="success-panel" class="success-panel" hidden>
+          <h3>Thanks &mdash; your message has been sent.</h3>
+          <p>
+            I&rsquo;ll get back to you within a few days. If you don&rsquo;t hear
+            back, something may have gone wrong on my end &mdash; feel free to
+            <a href="#" id="resubmit-link">submit again</a>.
+          </p>
+        </div>
+      </section>
+
+      <aside class="about-panel" aria-labelledby="about-heading">
+        <div class="about-panel__inner">
+          <h2 id="about-heading" class="section-title section-title--small">About</h2>
+
+          <p class="about-name">Jacob Carter</p>
+
+          <p>
+            Qualified secondary teacher with four years&rsquo; classroom
+            experience teaching mathematics &mdash; primarily Year 7&ndash;9, but
+            I work happily with all ages, primary through senior secondary.
+          </p>
+
+          <p>
+            I&rsquo;ve recently returned to the University of Melbourne to study
+            more mathematics. I miss teaching, so I&rsquo;m taking on a small
+            number of tutoring students alongside my studies.
+          </p>
+
+          <p>Based in Carlton.</p>
+
+          <hr class="about-divider" />
+
+          <p class="fineprint">
+            Working with Children Check current. Happy to provide on request.
+          </p>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <p>Jacob Carter &middot; Carlton, Melbourne</p>
+    </footer>
+  </main>
+
+  <!-- Reusable tutee block. Cloned by script.js. -->
+  <template id="tutee-template">
+    <div class="tutee-block" data-tutee>
+      <div class="tutee-block__header">
+        <h3 class="tutee-block__title">
+          Student <span class="tutee-block__number">1</span>
+        </h3>
+        <button type="button" class="remove-tutee" hidden>Remove</button>
+      </div>
+
+      <div class="field">
+        <label>Name</label>
+        <input type="text" data-tutee-field="name" required />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Age</label>
+          <input type="number" data-tutee-field="age" min="3" max="100" required />
+        </div>
+        <div class="field">
+          <label>Year level</label>
+          <select data-tutee-field="yearLevel" required>
+            <option value="">Select&hellip;</option>
+            <option>Foundation / Prep</option>
+            <option>Year 1</option>
+            <option>Year 2</option>
+            <option>Year 3</option>
+            <option>Year 4</option>
+            <option>Year 5</option>
+            <option>Year 6</option>
+            <option>Year 7</option>
+            <option>Year 8</option>
+            <option>Year 9</option>
+            <option>Year 10</option>
+            <option>Year 11</option>
+            <option>Year 12</option>
+            <option>University / other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Where are they working at the moment?</label>
+        <div class="radio-stack radio-stack--compact">
+          <label class="radio-row">
+            <input type="radio" data-tutee-field="progression" value="Below year level" required />
+            <span>Below year level</span>
+          </label>
+          <label class="radio-row">
+            <input type="radio" data-tutee-field="progression" value="At year level" />
+            <span>At year level</span>
+          </label>
+          <label class="radio-row">
+            <input type="radio" data-tutee-field="progression" value="Above year level" />
+            <span>Above year level</span>
+          </label>
+          <label class="radio-row">
+            <input type="radio" data-tutee-field="progression" value="Not sure" />
+            <span>Not sure</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>
+          Notes on their experience with, or feelings about, maths
+          <span class="hint">(optional)</span>
+        </label>
+        <textarea
+          data-tutee-field="notes"
+          rows="3"
+          placeholder="e.g. enjoys puzzles but finds algebra tricky; preparing for VCE Methods; bit of maths anxiety after a rough year…"
+        ></textarea>
+      </div>
+    </div>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
