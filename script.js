@@ -8,7 +8,7 @@
 /* ============================================================
    1. CONFIG  ── replace this with your deployed Apps Script URL
    ============================================================ */
-const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuKQ2aKwYbzpdR20Y-9DrpM0aqy2jVdlZwm3ETwWY_q7509dfKw8jLRxfQtcEN3cr2/exec';
 
 
 /* ─── Element refs ─── */
