@@ -73,7 +73,6 @@ function doPost(e) {
     sheet.autoResizeColumn(3); // Email
 
     sendEmail_(data, tuteeText);
-    sendNtfy_(data.contactName || 'unknown contact');
 
     return jsonOut_({ result: 'success' });
 
@@ -118,20 +117,6 @@ function sendEmail_(data, tuteeText) {
     subject: subject,
     body: body,
     replyTo: data.email || NOTIFY_EMAIL
-  });
-}
-
-/**
- * Sends a push notification via ntfy.sh.
- */
-function sendNtfy_(contactName) {
-  UrlFetchApp.fetch('https://ntfy.sh/mathswithjacob-eoi-7k2p', {
-    method: 'post',
-    headers: {
-      'Title': 'New EOI',
-      'Priority': 'high'
-    },
-    payload: `New EOI from ${contactName}`
   });
 }
 
