@@ -39,7 +39,6 @@ function doPost(e) {
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
 
-    // First-run: write headers if the sheet is empty.
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(HEADERS);
       sheet.getRange(1, 1, 1, HEADERS.length)
@@ -48,13 +47,19 @@ function doPost(e) {
       sheet.setFrozenRows(1);
     }
 
-    const tuteeText = (data.tutees || []).map((t, i) =>
-      `Student ${i + 1}: ${t.name}` +
-      `\n  Age: ${t.age}` +
-      `\n  Year level: ${t.yearLevel}` +
-      `\n  Currently working: ${t.progression}` +
-      (t.notes ? `\n  Notes: ${t.notes}` : '')
-    ).join('\n\n');
+    const tuteeText = (data.tutees || []).map((t, i) => {
+      const goalsList = (t.goals || []).join(', ') || '';
+      const goalsLine = goalsList
+        ? `\n  Tutoring goals: ${goalsList}` +
+          (t.goalOtherText ? ` — ${t.goalOtherText}` : '')
+        : '';
+
+      return `Student ${i + 1}: ${t.name}` +
+        `\n  Year level: ${t.yearLevel}` +
+        (t.progression ? `\n  Currently working: ${t.progression}` : '') +
+        (t.notes ? `\n  Notes: ${t.notes}` : '') +
+        goalsLine;
+    }).join('\n\n');
 
     sheet.appendRow([
       new Date(),
@@ -68,9 +73,8 @@ function doPost(e) {
       data.suburb || ''
     ]);
 
-    // Auto-fit a couple of useful columns
-    sheet.autoResizeColumn(2); // Contact name
-    sheet.autoResizeColumn(3); // Email
+    sheet.autoResizeColumn(2);
+    sheet.autoResizeColumn(3);
 
     sendEmail_(data, tuteeText);
 
@@ -83,8 +87,7 @@ function doPost(e) {
 }
 
 /**
- * Optional: a simple GET endpoint so you can sanity-check the deployment
- * by visiting the URL in a browser.
+ * Simple GET endpoint for sanity-checking the deployment.
  */
 function doGet() {
   return ContentService
@@ -103,19 +106,19 @@ function sendEmail_(data, tuteeText) {
     `─────────────────────────────────────────────\n\n` +
     `Contact: ${data.contactName}\n` +
     `Email: ${data.email}\n` +
-    (data.phone     ? `Phone: ${data.phone}\n` : '') +
+    (data.phone ? `Phone: ${data.phone}\n` : '') +
     `Best times to reach them: ${data.callTimes}\n\n` +
     `Number of students: ${(data.tutees || []).length}\n\n` +
     `${tuteeText}\n\n` +
     `─────────────────────────────────────────────\n` +
-    `Preferred location: ${data.location}` +
+    `Preferred location: ${data.location || '(not specified)'}` +
     (data.suburb ? ` (suburb: ${data.suburb})` : '') + `\n\n` +
     `Submitted: ${new Date().toString()}\n`;
 
   MailApp.sendEmail({
-    to: NOTIFY_EMAIL,
+    to:      NOTIFY_EMAIL,
     subject: subject,
-    body: body,
+    body:    body,
     replyTo: data.email || NOTIFY_EMAIL
   });
 }

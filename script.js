@@ -1,66 +1,157 @@
 /* ──────────────────────────────────────────────────────────────────────
    Maths with Jacob — form logic
-   - Manages dynamic "tutee" blocks (add / remove)
-   - Reveals the suburb field when "Your place" is selected
-   - Submits the form to a Google Apps Script web app endpoint
    ────────────────────────────────────────────────────────────────────── */
 
-/* ============================================================
-   1. CONFIG  ── replace this with your deployed Apps Script URL
-   ============================================================ */
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuKQ2aKwYbzpdR20Y-9DrpM0aqy2jVdlZwm3ETwWY_q7509dfKw8jLRxfQtcEN3cr2/exec';
 
-
 /* ─── Element refs ─── */
-const tuteeTemplate   = document.getElementById('tutee-template');
-const tuteesContainer = document.getElementById('tutees-container');
-const addTuteeBtn     = document.getElementById('add-tutee');
-const form            = document.getElementById('eoi-form');
-const statusEl        = document.getElementById('status');
-const submitBtn       = document.getElementById('submit-btn');
-const successPanel    = document.getElementById('success-panel');
-const resubmitLink    = document.getElementById('resubmit-link');
-const subUrbWrap      = document.getElementById('suburb-wrap');
-const suburbInput     = document.getElementById('suburb');
-const locationRadios  = form.querySelectorAll('input[name="location"]');
+const tuteeQuickTemplate   = document.getElementById('tutee-quick-template');
+const tuteeDetailTemplate  = document.getElementById('tutee-detail-template');
+const tuteesQuickContainer = document.getElementById('tutees-quick-container');
+const tuteesDetailContainer = document.getElementById('tutees-detail-container');
+const addTuteeBtn          = document.getElementById('add-tutee');
+const form                 = document.getElementById('eoi-form');
+const formIntro            = document.getElementById('form-intro');
+const statusEl             = document.getElementById('status');
+const submitBtn            = document.getElementById('submit-btn');
+const successPanel         = document.getElementById('success-panel');
+const resubmitLink         = document.getElementById('resubmit-link');
+const suburbWrap           = document.getElementById('suburb-wrap');
+const suburbInput          = document.getElementById('suburb');
+const locationRadios       = form.querySelectorAll('input[name="location"]');
+const anytimeCheckbox      = document.getElementById('anytime-checkbox');
+const callTimesDetails     = document.getElementById('call-times-details');
+const timeRangesContainer  = document.getElementById('time-ranges-container');
+const addTimeRangeBtn      = document.getElementById('add-time-range');
 
 let tuteeCounter = 0;
 
+/* ─── Time options for call-times dropdowns ─── */
+const TIME_OPTIONS = [
+  '7:00 am', '8:00 am', '9:00 am', '10:00 am', '11:00 am',
+  '12:00 pm', '1:00 pm', '2:00 pm', '3:00 pm', '4:00 pm',
+  '5:00 pm', '6:00 pm', '7:00 pm', '8:00 pm', '9:00 pm'
+];
 
-/* ─── Tutee block helpers ──────────────────────────────────── */
+function buildTimeSelect(cls, defaultValue) {
+  const sel = document.createElement('select');
+  sel.className = cls;
+  TIME_OPTIONS.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    if (t === defaultValue) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  return sel;
+}
+
+function addTimeRange(removable = false) {
+  const div = document.createElement('div');
+  div.className = 'time-range';
+
+  const afterLabel = document.createElement('span');
+  afterLabel.className = 'time-range-label';
+  afterLabel.textContent = 'After';
+
+  const afterSel = buildTimeSelect('time-range-after', '3:00 pm');
+
+  const beforeLabel = document.createElement('span');
+  beforeLabel.className = 'time-range-label';
+  beforeLabel.textContent = 'and before';
+
+  const beforeSel = buildTimeSelect('time-range-before', '7:00 pm');
+
+  div.appendChild(afterLabel);
+  div.appendChild(afterSel);
+  div.appendChild(beforeLabel);
+  div.appendChild(beforeSel);
+
+  if (removable) {
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-time-range';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', () => div.remove());
+    div.appendChild(removeBtn);
+  }
+
+  timeRangesContainer.appendChild(div);
+}
+
+/* Initialise with one time range */
+addTimeRange(false);
+addTimeRangeBtn.addEventListener('click', () => addTimeRange(true));
+
+/* ─── Anytime checkbox ─── */
+function updateCallTimesState() {
+  const isAnytime = anytimeCheckbox.checked;
+  callTimesDetails.classList.toggle('is-disabled', isAnytime);
+}
+
+anytimeCheckbox.addEventListener('change', updateCallTimesState);
+updateCallTimesState();
+
+/* ─── Day-of-week buttons ─── */
+document.querySelectorAll('.day-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('is-active');
+    btn.setAttribute('aria-pressed', btn.classList.contains('is-active'));
+  });
+});
+
+/* ─── Tutee block management ─── */
 
 function addTuteeBlock() {
   tuteeCounter += 1;
-  const node = tuteeTemplate.content.firstElementChild.cloneNode(true);
+  const idx = tuteeCounter;
 
-  // Each tutee's "progression" radios need a unique name so
-  // selecting an option in tutee 2 doesn't deselect tutee 1.
-  node.querySelectorAll('input[type="radio"][data-tutee-field="progression"]')
-      .forEach(r => { r.name = `progression-${tuteeCounter}`; });
+  /* Quick block (section 1) */
+  const quickNode = tuteeQuickTemplate.content.firstElementChild.cloneNode(true);
+  quickNode.dataset.index = idx;
+  quickNode.querySelector('.remove-tutee').addEventListener('click', () => removeTuteeBlock(idx));
+  tuteesQuickContainer.appendChild(quickNode);
 
-  // Tag the block with its index for later collection
-  node.dataset.index = tuteeCounter;
+  /* Detail block (section 2) */
+  const detailNode = tuteeDetailTemplate.content.firstElementChild.cloneNode(true);
+  detailNode.dataset.index = idx;
+  detailNode.querySelectorAll('[data-tutee-field="progression"]')
+    .forEach(r => { r.name = `progression-${idx}`; });
 
-  // Wire up the remove button
-  const removeBtn = node.querySelector('.remove-tutee');
-  removeBtn.addEventListener('click', () => {
-    node.remove();
-    refreshTuteeNumbers();
+  const goalOtherCheck = detailNode.querySelector('[data-tutee-field="goal-other-check"]');
+  const goalOtherWrap  = detailNode.querySelector('[data-goal-other-wrap]');
+  goalOtherCheck.addEventListener('change', () => {
+    goalOtherWrap.hidden = !goalOtherCheck.checked;
   });
 
-  tuteesContainer.appendChild(node);
+  tuteesDetailContainer.appendChild(detailNode);
+
+  refreshTuteeNumbers();
+}
+
+function removeTuteeBlock(idx) {
+  const quickBlock  = tuteesQuickContainer.querySelector(`[data-index="${idx}"]`);
+  const detailBlock = tuteesDetailContainer.querySelector(`[data-index="${idx}"]`);
+  if (quickBlock)  quickBlock.remove();
+  if (detailBlock) detailBlock.remove();
   refreshTuteeNumbers();
 }
 
 function refreshTuteeNumbers() {
-  const blocks = tuteesContainer.querySelectorAll('[data-tutee]');
-  blocks.forEach((block, idx) => {
+  const quickBlocks  = tuteesQuickContainer.querySelectorAll('[data-tutee-quick]');
+  const detailBlocks = tuteesDetailContainer.querySelectorAll('[data-tutee-detail]');
+  const count = quickBlocks.length;
+
+  quickBlocks.forEach((block, idx) => {
     const numEl = block.querySelector('.tutee-block__number');
     if (numEl) numEl.textContent = idx + 1;
-
-    // Only show "Remove" if there's more than one block
     const removeBtn = block.querySelector('.remove-tutee');
-    if (removeBtn) removeBtn.hidden = blocks.length <= 1;
+    if (removeBtn) removeBtn.hidden = count <= 1;
+  });
+
+  detailBlocks.forEach((block, idx) => {
+    const numEl = block.querySelector('.tutee-block__number');
+    if (numEl) numEl.textContent = idx + 1;
   });
 }
 
@@ -68,39 +159,80 @@ function refreshTuteeNumbers() {
 addTuteeBlock();
 addTuteeBtn.addEventListener('click', addTuteeBlock);
 
-
-/* ─── Conditional "suburb" field ───────────────────────────── */
-
+/* ─── Suburb reveal ─── */
 function updateSuburbVisibility() {
   const yoursSelected = document.getElementById('loc-yours').checked;
-  subUrbWrap.hidden = !yoursSelected;
+  suburbWrap.hidden    = !yoursSelected;
   suburbInput.required = yoursSelected;
   if (!yoursSelected) suburbInput.value = '';
 }
 
 locationRadios.forEach(r => r.addEventListener('change', updateSuburbVisibility));
 
+/* ─── Collapsible panels ─── */
+document.querySelectorAll('.collapsible-panel__toggle').forEach(toggle => {
+  toggle.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    const body = document.getElementById(toggle.getAttribute('aria-controls'));
+    if (body) body.hidden = expanded;
+  });
+});
 
-/* ─── Collect form data ────────────────────────────────────── */
+/* ─── Collect call times ─── */
+function collectCallTimes() {
+  if (anytimeCheckbox.checked) return 'Anytime';
 
+  const activeDays = Array.from(document.querySelectorAll('.day-btn.is-active'))
+    .map(b => b.dataset.day);
+
+  const ranges = Array.from(timeRangesContainer.querySelectorAll('.time-range')).map(r => {
+    const after  = r.querySelector('.time-range-after').value;
+    const before = r.querySelector('.time-range-before').value;
+    return `after ${after}, before ${before}`;
+  });
+
+  const parts = [];
+  if (activeDays.length) parts.push(activeDays.join(', '));
+  if (ranges.length) parts.push(ranges.join('; '));
+  return parts.join(' — ') || 'Not specified';
+}
+
+/* ─── Collect form data ─── */
 function collectData() {
   const fd = new FormData(form);
 
-  const tutees = Array.from(tuteesContainer.querySelectorAll('[data-tutee]')).map(block => {
-    const get = (field) => {
+  const tutees = Array.from(tuteesQuickContainer.querySelectorAll('[data-tutee-quick]')).map(quickBlock => {
+    const idx         = quickBlock.dataset.index;
+    const detailBlock = tuteesDetailContainer.querySelector(`[data-index="${idx}"]`);
+
+    const getFrom = (block, field) => {
+      if (!block) return '';
       const el = block.querySelector(`[data-tutee-field="${field}"]`);
       return el ? el.value.trim() : '';
     };
-    const getRadio = (field) => {
+    const getRadioFrom = (block, field) => {
+      if (!block) return '';
       const el = block.querySelector(`[data-tutee-field="${field}"]:checked`);
       return el ? el.value : '';
     };
+
+    const goals = detailBlock
+      ? Array.from(detailBlock.querySelectorAll('[data-tutee-field="goal"]:checked')).map(cb => cb.value)
+      : [];
+    const goalOtherCheck = detailBlock
+      ? detailBlock.querySelector('[data-tutee-field="goal-other-check"]')
+      : null;
+    if (goalOtherCheck && goalOtherCheck.checked) goals.push('Other');
+    const goalOtherText = getFrom(detailBlock, 'goalOtherText');
+
     return {
-      name:        get('name'),
-      age:         get('age'),
-      yearLevel:   get('yearLevel'),
-      progression: getRadio('progression'),
-      notes:       get('notes')
+      name:         getFrom(quickBlock, 'name'),
+      yearLevel:    getFrom(quickBlock, 'yearLevel'),
+      progression:  getRadioFrom(detailBlock, 'progression'),
+      notes:        getFrom(detailBlock, 'notes'),
+      goals:        goals,
+      goalOtherText: goalOtherText
     };
   });
 
@@ -108,7 +240,7 @@ function collectData() {
     contactName: (fd.get('contactName') || '').trim(),
     email:       (fd.get('email') || '').trim(),
     phone:       (fd.get('phone') || '').trim(),
-    callTimes:   (fd.get('callTimes') || '').trim() || 'Anytime',
+    callTimes:   collectCallTimes(),
     location:    fd.get('location') || '',
     suburb:      (fd.get('suburb') || '').trim(),
     tutees:      tutees,
@@ -116,38 +248,31 @@ function collectData() {
   };
 }
 
-
-/* ─── Validation ──────────────────────────────────────────── */
-
+/* ─── Validation ─── */
 function validate(data) {
   if (!data.contactName) return 'Please enter your name.';
   if (!data.email)       return 'Please enter your email address.';
 
   for (let i = 0; i < data.tutees.length; i++) {
-    const t = data.tutees[i];
+    const t     = data.tutees[i];
     const label = data.tutees.length > 1 ? `Student ${i + 1}` : 'the student';
-    if (!t.name)        return `Please enter a name for ${label}.`;
-    if (!t.age)         return `Please enter an age for ${label}.`;
-    if (!t.yearLevel)   return `Please pick a year level for ${label}.`;
-    if (!t.progression) return `Please indicate where ${label} is working at the moment.`;
+    if (!t.name)      return `Please enter a name for ${label}.`;
+    if (!t.yearLevel) return `Please pick a year level for ${label}.`;
   }
 
-  if (!data.location)    return 'Please pick a preferred location.';
   if (data.location === 'Your place' && !data.suburb)
     return 'Please tell me which suburb your place is in.';
 
   return null;
 }
 
-
-/* ─── Submission ──────────────────────────────────────────── */
-
+/* ─── Submission ─── */
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  statusEl.className = 'status';
+  statusEl.className   = 'status';
   statusEl.textContent = '';
 
-  const data = collectData();
+  const data  = collectData();
   const error = validate(data);
   if (error) {
     statusEl.classList.add('status--error');
@@ -158,21 +283,16 @@ form.addEventListener('submit', async (e) => {
   if (APPS_SCRIPT_URL.startsWith('PASTE_')) {
     statusEl.classList.add('status--error');
     statusEl.textContent = 'Form not yet configured. (Site owner: paste your Apps Script URL into script.js.)';
-    console.error('APPS_SCRIPT_URL has not been set in script.js');
     return;
   }
 
-  submitBtn.disabled = true;
+  submitBtn.disabled   = true;
   statusEl.textContent = 'Sending…';
 
   try {
-    /* We deliberately do NOT set Content-Type. The browser will use
-       text/plain;charset=UTF-8 which avoids a CORS preflight that
-       Apps Script web apps don't always handle gracefully. The Apps
-       Script reads the raw body via e.postData.contents. */
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body:   JSON.stringify(data),
       redirect: 'follow'
     });
 
@@ -183,7 +303,8 @@ form.addEventListener('submit', async (e) => {
     try { parsed = JSON.parse(text); } catch { parsed = { result: 'unknown' }; }
 
     if (parsed.result === 'success') {
-      form.hidden = true;
+      formIntro.hidden    = true;
+      form.hidden         = true;
       successPanel.hidden = false;
       successPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
@@ -198,18 +319,35 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-/* "Submit again" link in the success panel */
+/* ─── "Submit again" link ─── */
 resubmitLink.addEventListener('click', (e) => {
   e.preventDefault();
+
   successPanel.hidden = true;
-  form.hidden = false;
+  formIntro.hidden    = false;
+  form.hidden         = false;
   form.reset();
-  // Reset tutees to a single block
-  tuteesContainer.innerHTML = '';
+
+  /* Reset tutees */
+  tuteesQuickContainer.innerHTML  = '';
+  tuteesDetailContainer.innerHTML = '';
   tuteeCounter = 0;
   addTuteeBlock();
+
+  /* Reset call times */
+  anytimeCheckbox.checked    = true;
+  timeRangesContainer.innerHTML = '';
+  addTimeRange(false);
+  updateCallTimesState();
+
+  /* Reset day buttons */
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    btn.classList.remove('is-active');
+    btn.removeAttribute('aria-pressed');
+  });
+
   updateSuburbVisibility();
   statusEl.textContent = '';
-  statusEl.className = 'status';
+  statusEl.className   = 'status';
   form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
