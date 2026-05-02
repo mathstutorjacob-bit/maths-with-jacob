@@ -155,7 +155,12 @@ hr {
   color: var(--ink-soft);
   font-size: 1.05rem;
   max-width: 48ch;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.intro-divider {
+  margin: 0 0 2rem;
+  border-color: var(--rule-soft);
 }
 
 /* ─── Sidebar (desktop: sticky column; mobile: above form) ─── */
@@ -238,6 +243,27 @@ hr {
   padding: clamp(1rem, 3vw, 1.5rem);
 }
 
+/* ─── Desktop: About panel always open ─── */
+.about-desktop-heading {
+  display: none; /* hidden on mobile — toggle button serves as heading */
+}
+
+@media (min-width: 880px) {
+  #about-collapsible .collapsible-panel__toggle {
+    display: none;
+  }
+  #about-collapsible .collapsible-panel__body[hidden] {
+    display: block; /* override hidden attribute on desktop */
+  }
+  .about-desktop-heading {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--ink);
+    margin: 0 0 0.85rem;
+  }
+}
+
 /* ─── About content (inside collapsible body) ─── */
 .about-name {
   font-family: var(--font-display);
@@ -275,6 +301,12 @@ hr {
   font-size: 1.45rem;
   color: var(--ink);
   margin-bottom: 0.3rem;
+}
+
+.form-section__heading-note {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  font-style: italic;
 }
 
 .form-section__intro {
@@ -547,101 +579,48 @@ select {
   border-color: var(--accent-soft);
 }
 
+/* ─── Field panel (boxed group treatment) ─── */
+.field-panel {
+  background: var(--paper-soft);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.5rem 0.15rem;
+}
+
+/* ─── Call-time reveal (beneath phone) ─── */
+.call-time-wrap {
+  margin-top: -0.25rem;
+  margin-bottom: 1.1rem;
+  padding: 0.85rem 1rem 0.85rem;
+  background: var(--paper-soft);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius);
+}
+
+.call-time-subheading {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin: 0 0 0.55rem;
+}
+
+.call-time-radios {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.3rem;
+}
+
+@media (min-width: 480px) {
+  .call-time-radios {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* ─── Conditional reveal ─── */
 .conditional {
   margin: 0.5rem 0 0.5rem 1.7rem;
   padding-left: 1rem;
   border-left: 2px solid var(--accent-soft);
-}
-
-/* ─── Call times widget ─── */
-.call-times-widget {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.call-times-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  padding: 1rem;
-  background: var(--paper-soft);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-}
-
-.call-times-details.is-disabled {
-  opacity: 0.45;
-  pointer-events: none;
-}
-
-.day-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.day-btn {
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  background: var(--paper-soft);
-  color: var(--ink-soft);
-  cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
-}
-
-.day-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent-dark);
-}
-
-.day-btn.is-active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--paper);
-}
-
-.time-range {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.time-range-label {
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-  white-space: nowrap;
-}
-
-.time-range select {
-  width: auto;
-  flex: 0 0 auto;
-  font-size: 0.9rem;
-  padding: 0.4rem 2rem 0.4rem 0.65rem;
-}
-
-.remove-time-range {
-  font: inherit;
-  font-size: 0.8rem;
-  background: transparent;
-  color: var(--ink-faint);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  padding: 0.25rem 0.6rem;
-  cursor: pointer;
-  margin-left: 0.25rem;
-  transition: color 120ms ease, border-color 120ms ease;
-}
-
-.remove-time-range:hover {
-  color: var(--error);
-  border-color: var(--error);
 }
 
 /* ─── Tutee blocks ─── */
@@ -735,12 +714,6 @@ select {
   background: var(--accent);
   color: var(--paper);
   border-style: solid;
-}
-
-.ghost-button--small {
-  padding: 0.4rem 0.85rem;
-  font-size: 0.85rem;
-  align-self: flex-start;
 }
 
 .remove-tutee {

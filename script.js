@@ -5,100 +5,35 @@
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxuKQ2aKwYbzpdR20Y-9DrpM0aqy2jVdlZwm3ETwWY_q7509dfKw8jLRxfQtcEN3cr2/exec';
 
 /* ─── Element refs ─── */
-const tuteeQuickTemplate   = document.getElementById('tutee-quick-template');
-const tuteeDetailTemplate  = document.getElementById('tutee-detail-template');
-const tuteesQuickContainer = document.getElementById('tutees-quick-container');
+const tuteeQuickTemplate    = document.getElementById('tutee-quick-template');
+const tuteeDetailTemplate   = document.getElementById('tutee-detail-template');
+const tuteesQuickContainer  = document.getElementById('tutees-quick-container');
 const tuteesDetailContainer = document.getElementById('tutees-detail-container');
-const addTuteeBtn          = document.getElementById('add-tutee');
-const form                 = document.getElementById('eoi-form');
-const formIntro            = document.getElementById('form-intro');
-const statusEl             = document.getElementById('status');
-const submitBtn            = document.getElementById('submit-btn');
-const successPanel         = document.getElementById('success-panel');
-const resubmitLink         = document.getElementById('resubmit-link');
-const suburbWrap           = document.getElementById('suburb-wrap');
-const suburbInput          = document.getElementById('suburb');
-const locationRadios       = form.querySelectorAll('input[name="location"]');
-const anytimeCheckbox      = document.getElementById('anytime-checkbox');
-const callTimesDetails     = document.getElementById('call-times-details');
-const timeRangesContainer  = document.getElementById('time-ranges-container');
-const addTimeRangeBtn      = document.getElementById('add-time-range');
+const addTuteeBtn           = document.getElementById('add-tutee');
+const form                  = document.getElementById('eoi-form');
+const formIntro             = document.getElementById('form-intro');
+const statusEl              = document.getElementById('status');
+const submitBtn             = document.getElementById('submit-btn');
+const successPanel          = document.getElementById('success-panel');
+const resubmitLink          = document.getElementById('resubmit-link');
+const suburbWrap            = document.getElementById('suburb-wrap');
+const suburbInput           = document.getElementById('suburb');
+const locationRadios        = form.querySelectorAll('input[name="location"]');
+const phoneInput            = document.getElementById('phone');
+const callTimeWrap          = document.getElementById('call-time-wrap');
 
 let tuteeCounter = 0;
 
-/* ─── Time options for call-times dropdowns ─── */
-const TIME_OPTIONS = [
-  '7:00 am', '8:00 am', '9:00 am', '10:00 am', '11:00 am',
-  '12:00 pm', '1:00 pm', '2:00 pm', '3:00 pm', '4:00 pm',
-  '5:00 pm', '6:00 pm', '7:00 pm', '8:00 pm', '9:00 pm'
-];
-
-function buildTimeSelect(cls, defaultValue) {
-  const sel = document.createElement('select');
-  sel.className = cls;
-  TIME_OPTIONS.forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t;
-    opt.textContent = t;
-    if (t === defaultValue) opt.selected = true;
-    sel.appendChild(opt);
-  });
-  return sel;
-}
-
-function addTimeRange(removable = false) {
-  const div = document.createElement('div');
-  div.className = 'time-range';
-
-  const afterLabel = document.createElement('span');
-  afterLabel.className = 'time-range-label';
-  afterLabel.textContent = 'After';
-
-  const afterSel = buildTimeSelect('time-range-after', '3:00 pm');
-
-  const beforeLabel = document.createElement('span');
-  beforeLabel.className = 'time-range-label';
-  beforeLabel.textContent = 'and before';
-
-  const beforeSel = buildTimeSelect('time-range-before', '7:00 pm');
-
-  div.appendChild(afterLabel);
-  div.appendChild(afterSel);
-  div.appendChild(beforeLabel);
-  div.appendChild(beforeSel);
-
-  if (removable) {
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'remove-time-range';
-    removeBtn.textContent = 'Remove';
-    removeBtn.addEventListener('click', () => div.remove());
-    div.appendChild(removeBtn);
+/* ─── Phone → call-time reveal ─── */
+function updateCallTimeVisibility() {
+  const hasPhone = phoneInput.value.trim() !== '';
+  callTimeWrap.hidden = !hasPhone;
+  if (!hasPhone) {
+    form.querySelectorAll('input[name="callTime"]').forEach(r => { r.checked = false; });
   }
-
-  timeRangesContainer.appendChild(div);
 }
 
-/* Initialise with one time range */
-addTimeRange(false);
-addTimeRangeBtn.addEventListener('click', () => addTimeRange(true));
-
-/* ─── Anytime checkbox ─── */
-function updateCallTimesState() {
-  const isAnytime = anytimeCheckbox.checked;
-  callTimesDetails.classList.toggle('is-disabled', isAnytime);
-}
-
-anytimeCheckbox.addEventListener('change', updateCallTimesState);
-updateCallTimesState();
-
-/* ─── Day-of-week buttons ─── */
-document.querySelectorAll('.day-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    btn.classList.toggle('is-active');
-    btn.setAttribute('aria-pressed', btn.classList.contains('is-active'));
-  });
-});
+phoneInput.addEventListener('input', updateCallTimeVisibility);
 
 /* ─── Tutee block management ─── */
 
@@ -179,25 +114,6 @@ document.querySelectorAll('.collapsible-panel__toggle').forEach(toggle => {
   });
 });
 
-/* ─── Collect call times ─── */
-function collectCallTimes() {
-  if (anytimeCheckbox.checked) return 'Anytime';
-
-  const activeDays = Array.from(document.querySelectorAll('.day-btn.is-active'))
-    .map(b => b.dataset.day);
-
-  const ranges = Array.from(timeRangesContainer.querySelectorAll('.time-range')).map(r => {
-    const after  = r.querySelector('.time-range-after').value;
-    const before = r.querySelector('.time-range-before').value;
-    return `after ${after}, before ${before}`;
-  });
-
-  const parts = [];
-  if (activeDays.length) parts.push(activeDays.join(', '));
-  if (ranges.length) parts.push(ranges.join('; '));
-  return parts.join(' — ') || 'Not specified';
-}
-
 /* ─── Collect form data ─── */
 function collectData() {
   const fd = new FormData(form);
@@ -227,20 +143,23 @@ function collectData() {
     const goalOtherText = getFrom(detailBlock, 'goalOtherText');
 
     return {
-      name:         getFrom(quickBlock, 'name'),
-      yearLevel:    getFrom(quickBlock, 'yearLevel'),
-      progression:  getRadioFrom(detailBlock, 'progression'),
-      notes:        getFrom(detailBlock, 'notes'),
-      goals:        goals,
+      name:          getFrom(quickBlock, 'name'),
+      yearLevel:     getFrom(quickBlock, 'yearLevel'),
+      progression:   getRadioFrom(detailBlock, 'progression'),
+      notes:         getFrom(detailBlock, 'notes'),
+      goals:         goals,
       goalOtherText: goalOtherText
     };
   });
 
+  const phone    = (fd.get('phone') || '').trim();
+  const callTime = !callTimeWrap.hidden ? (fd.get('callTime') || '') : '';
+
   return {
     contactName: (fd.get('contactName') || '').trim(),
     email:       (fd.get('email') || '').trim(),
-    phone:       (fd.get('phone') || '').trim(),
-    callTimes:   collectCallTimes(),
+    phone:       phone,
+    callTime:    callTime,
     location:    fd.get('location') || '',
     suburb:      (fd.get('suburb') || '').trim(),
     tutees:      tutees,
@@ -291,8 +210,8 @@ form.addEventListener('submit', async (e) => {
 
   try {
     const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body:   JSON.stringify(data),
+      method:   'POST',
+      body:     JSON.stringify(data),
       redirect: 'follow'
     });
 
@@ -334,17 +253,8 @@ resubmitLink.addEventListener('click', (e) => {
   tuteeCounter = 0;
   addTuteeBlock();
 
-  /* Reset call times */
-  anytimeCheckbox.checked    = true;
-  timeRangesContainer.innerHTML = '';
-  addTimeRange(false);
-  updateCallTimesState();
-
-  /* Reset day buttons */
-  document.querySelectorAll('.day-btn').forEach(btn => {
-    btn.classList.remove('is-active');
-    btn.removeAttribute('aria-pressed');
-  });
+  /* Reset call-time */
+  callTimeWrap.hidden = true;
 
   updateSuburbVisibility();
   statusEl.textContent = '';

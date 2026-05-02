@@ -23,7 +23,7 @@ const HEADERS = [
   'Contact name',
   'Email',
   'Phone',
-  'Best contact times',
+  'Best time to call',
   '# of students',
   'Student details',
   'Preferred location',
@@ -66,7 +66,7 @@ function doPost(e) {
       data.contactName || '',
       data.email || '',
       data.phone || '',
-      data.callTimes || '',
+      data.callTime || '',
       (data.tutees || []).length,
       tuteeText,
       data.location || '',
@@ -107,7 +107,7 @@ function sendEmail_(data, tuteeText) {
     `Contact: ${data.contactName}\n` +
     `Email: ${data.email}\n` +
     (data.phone ? `Phone: ${data.phone}\n` : '') +
-    `Best times to reach them: ${data.callTimes}\n\n` +
+    (data.callTime ? `Best time to call: ${data.callTime}\n` : '') +
     `Number of students: ${(data.tutees || []).length}\n\n` +
     `${tuteeText}\n\n` +
     `─────────────────────────────────────────────\n` +

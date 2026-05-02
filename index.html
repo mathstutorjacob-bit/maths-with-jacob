@@ -48,6 +48,8 @@
           </p>
         </div>
 
+        <hr class="intro-divider" />
+
         <form id="eoi-form" novalidate>
 
           <!-- ─── Section 1: Quick details ─── -->
@@ -70,6 +72,20 @@
               <input type="tel" id="phone" name="phone" autocomplete="tel" />
             </div>
 
+            <div id="call-time-wrap" class="call-time-wrap" hidden>
+              <p class="call-time-subheading">Best time to call? <span class="hint">(optional)</span></p>
+              <div class="call-time-radios">
+                <label class="radio-row">
+                  <input type="radio" name="callTime" value="Anytime is fine" />
+                  <span>Anytime is fine</span>
+                </label>
+                <label class="radio-row">
+                  <input type="radio" name="callTime" value="Outside of business hours" />
+                  <span>Outside of business hours</span>
+                </label>
+              </div>
+            </div>
+
             <div id="tutees-quick-container"></div>
 
             <button type="button" id="add-tutee" class="ghost-button">+ Add another student</button>
@@ -77,71 +93,49 @@
 
           <!-- ─── Section 2: A bit more ─── -->
           <div class="form-section">
-            <h3 class="form-section__heading">A bit more about your student</h3>
+            <h3 class="form-section__heading">A bit more about the learner <span class="form-section__heading-note">(if you have the time)</span></h3>
             <p class="form-section__intro">These help me get a better sense of fit, but skip anything you&rsquo;d rather not answer &mdash; even one or two helps.</p>
 
             <div id="tutees-detail-container"></div>
 
-            <!-- Call times widget -->
-            <div class="field">
-              <label class="label-as-heading">Best times to reach you</label>
-              <div class="call-times-widget">
-                <label class="checkbox-row">
-                  <input type="checkbox" id="anytime-checkbox" checked />
-                  <span>Anytime is fine</span>
-                </label>
-                <div id="call-times-details" class="call-times-details">
-                  <div class="day-buttons" id="day-buttons-row" role="group" aria-label="Days of the week">
-                    <button type="button" class="day-btn" data-day="Mon">Mon</button>
-                    <button type="button" class="day-btn" data-day="Tue">Tue</button>
-                    <button type="button" class="day-btn" data-day="Wed">Wed</button>
-                    <button type="button" class="day-btn" data-day="Thu">Thu</button>
-                    <button type="button" class="day-btn" data-day="Fri">Fri</button>
-                    <button type="button" class="day-btn" data-day="Sat">Sat</button>
-                    <button type="button" class="day-btn" data-day="Sun">Sun</button>
-                  </div>
-                  <div id="time-ranges-container"></div>
-                  <button type="button" id="add-time-range" class="ghost-button ghost-button--small">+ Add another time range</button>
-                </div>
-              </div>
-            </div>
-
             <!-- Preferred location -->
             <div class="field">
               <label class="label-as-heading">Preferred location <span class="hint">(pick one &mdash; we can always change it later)</span></label>
-              <div class="radio-stack">
-                <label class="radio-row">
-                  <input type="radio" name="location" value="The University of Melbourne" />
-                  <span>The University of Melbourne</span>
-                </label>
-                <label class="radio-row">
-                  <input type="radio" name="location" value="Carlton North Library" />
-                  <span>Carlton North Library</span>
-                </label>
-                <label class="radio-row">
-                  <input type="radio" name="location" value="Kathleen Syme Library and Community Centre" />
-                  <span>Kathleen Syme Library &amp; Community Centre</span>
-                </label>
-                <label class="radio-row">
-                  <input type="radio" name="location" value="Jacob's place (Carlton)" />
-                  <span>My place &mdash; Carlton</span>
-                </label>
-                <label class="radio-row">
-                  <input type="radio" name="location" value="Your place" id="loc-yours" />
-                  <span>Your place</span>
-                </label>
+              <div class="field-panel">
+                <div class="radio-stack">
+                  <label class="radio-row">
+                    <input type="radio" name="location" value="The University of Melbourne" />
+                    <span>The University of Melbourne</span>
+                  </label>
+                  <label class="radio-row">
+                    <input type="radio" name="location" value="Carlton North Library" />
+                    <span>Carlton North Library</span>
+                  </label>
+                  <label class="radio-row">
+                    <input type="radio" name="location" value="Kathleen Syme Library and Community Centre" />
+                    <span>Kathleen Syme Library &amp; Community Centre</span>
+                  </label>
+                  <label class="radio-row">
+                    <input type="radio" name="location" value="Jacob's place (Carlton)" />
+                    <span>My place &mdash; Carlton</span>
+                  </label>
+                  <label class="radio-row">
+                    <input type="radio" name="location" value="Your place" id="loc-yours" />
+                    <span>Your place</span>
+                  </label>
 
-                <div class="conditional" id="suburb-wrap" hidden>
-                  <div class="field">
-                    <label for="suburb">Which suburb?</label>
-                    <input type="text" id="suburb" name="suburb" />
+                  <div class="conditional" id="suburb-wrap" hidden>
+                    <div class="field">
+                      <label for="suburb">Which suburb?</label>
+                      <input type="text" id="suburb" name="suburb" />
+                    </div>
                   </div>
-                </div>
 
-                <label class="radio-row">
-                  <input type="radio" name="location" value="Flexible / no preference" />
-                  <span>Flexible &mdash; happy with whatever works</span>
-                </label>
+                  <label class="radio-row">
+                    <input type="radio" name="location" value="Flexible / no preference" />
+                    <span>Flexible &mdash; happy with whatever works</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -179,6 +173,7 @@
             </svg>
           </button>
           <div class="collapsible-panel__body" id="about-body" hidden>
+            <h2 class="about-desktop-heading section-title--small">About</h2>
             <p class="about-name">Jacob Carter</p>
             <p>
               Qualified secondary teacher with four years&rsquo; classroom
@@ -294,18 +289,6 @@
       </div>
 
       <div class="field">
-        <label>
-          Notes on their experience with, or feelings about, maths
-          <span class="hint">(optional)</span>
-        </label>
-        <textarea
-          data-tutee-field="notes"
-          rows="3"
-          placeholder="e.g. enjoys puzzles but finds algebra tricky; preparing for VCE Methods; bit of maths anxiety after a rough year…"
-        ></textarea>
-      </div>
-
-      <div class="field">
         <label>What would you like to get out of tutoring? <span class="hint">(optional)</span></label>
         <div class="checkbox-stack">
           <label class="checkbox-row">
@@ -328,6 +311,15 @@
             <textarea data-tutee-field="goalOtherText" rows="2" placeholder="Please explain…"></textarea>
           </div>
         </div>
+      </div>
+
+      <div class="field">
+        <label>Anything else I should know? <span class="hint">(optional)</span></label>
+        <textarea
+          data-tutee-field="notes"
+          rows="3"
+          placeholder="e.g. preparing for VCE Methods; would like extension work in algebra before starting Year 7; has ADHD and benefits from short focused tasks; bit of maths anxiety after a rough year"
+        ></textarea>
       </div>
     </div>
   </template>
